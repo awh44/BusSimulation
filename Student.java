@@ -20,13 +20,14 @@ public class Student implements Runnable
 		}
 		else
 		{
+			//If the student couldn't board, they missed the bus.
 			System.out.println("Student missed the last bus.");
 		}
 	}
 
 	private boolean wait_and_acquire_seat()
 	{
-		System.out.println("Student waiting for bus.");
+		System.out.println("Student about to wait for the bus.");
 		return stop_.wait_for_bus();
 	}
 

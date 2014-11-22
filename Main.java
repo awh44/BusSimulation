@@ -4,7 +4,12 @@ public class Main
 	{
 		if (args.length < 4)
 		{
-			System.out.println("Usage: java Main [number of students] [max seats on bus] [number of bus loops] [drive time for bus]");
+			System.out.println("Usage: java Main [number of students] [max seats on bus] [number of bus loops] [drive time for bus] [split]\n" +
+							   "[number of students] - number of students to use\n" +
+							   "[max seats on bus] - number of seats on bus\n" + 
+							   "[number of bus loops] - the number of times the bus should pick students up before the thread exits\n" +
+							   "[drive time for bus] - the length of time (ms) the bus should drive before returning to pick up students again\n" +
+							   "[split] - optional (if present, automatically considered true). Whether the number of students should be split so that half the threads are created before the bus starts and half after or whether all should be after.");
 			return;
 		}
 
@@ -22,17 +27,28 @@ public class Main
 			return;
 		}
 
-
 		BusStop stop = new BusStop();
 		Bus bus = new Bus(stop, max_seats, num_loops, drive_time);
 		Thread bus_thread = new Thread(bus);
 		Thread student_threads[] = new Thread[num_students];
 
-		int first = num_students / 2;
-		for (int i = 0; i < first; i++)
+		//Start some number of students and let them
+		int first;
+		//if the user provided the [split] argument, then start half of the student threads before
+		//starting the bus.
+		if (args.length > 4)
 		{
-			student_threads[i] = new Thread(new Student(bus, stop));
-			student_threads[i].start();
+			first = num_students / 2;
+			for (int i = 0; i < first; i++)
+			{
+				student_threads[i] = new Thread(new Student(bus, stop));
+				student_threads[i].start();
+			}
+		}
+		else
+		{
+			//otherwise, start all the threads after starting the bus.
+			first = 0;
 		}
 
 		bus_thread.start();	

@@ -12,6 +12,9 @@ public class BusStop
 	{
 		try
 		{
+			//Atomically, using the mutex_, determine whether the bus has departed for the final
+			//time, and if it has, return false to indicate that. Otherwise, increase the number of
+			//students waiting.
 			mutex_.acquire();
 			if (!buses_remain_)
 			{
@@ -27,6 +30,7 @@ public class BusStop
 				return false;
 			}
 
+			//Decrease the number of students waiting by 1.
 			change_waiting(-1);
 		}
 		catch (InterruptedException e)
@@ -35,11 +39,13 @@ public class BusStop
 			System.exit(1);
 		}
 
+		//if the student has acquired a seat on the bus, return true
 		return true;
 	}
 
 	public void boarded()
 	{
+		//Indicate to the bus that a student has boarded.
 		can_depart_.release();
 	}
 
@@ -54,11 +60,17 @@ public class BusStop
 	{
 		try
 		{
+			//take the mininum of the number of students waiting and the number of seats...
 			int waiting = waiting_;
 			int max_seats = bus.get_max_seats();
 			int release = waiting < max_seats ? waiting : max_seats;
 
-			board_.release(release);
+			System.out.println("Bus arrived. Number of students to board: " + release);
+
+			//...and release that many students to board.
+			board_.release(release); 
+			//Also force the bus to acquire that many students before it can depart, i.e., let all
+			//the students who are boarding board first.
 			can_depart_.acquire(release);	
 		}
 		catch (InterruptedException e)
@@ -72,11 +84,14 @@ public class BusStop
 	{
 		try
 		{
+			//Wait for any threads in the mutex in the wait_for_bus method to finish modifying
+			//waiting before setting buses_remain to false
 			mutex_.acquire();
 			buses_remain_ = false;
 			mutex_.release();
 
 			System.out.println(waiting_ + " waiting students missed the last bus.");
+			//Then release all the students who are waiting.
 			board_.release(waiting_);
 		}
 		catch (InterruptedException e)
