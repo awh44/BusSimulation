@@ -14,14 +14,20 @@ public class Student implements Runnable
 	@Override
 	public void run()
 	{
-		wait_and_acquire_seat();
-		board_bus();
+		if (wait_and_acquire_seat())
+		{
+			board_bus();
+		}
+		else
+		{
+			System.out.println("Student missed the last bus.");
+		}
 	}
 
-	private void wait_and_acquire_seat()
+	private boolean wait_and_acquire_seat()
 	{
 		System.out.println("Student waiting for bus.");
-		stop_.wait_for_bus();
+		return stop_.wait_for_bus();
 	}
 
 	private void board_bus()

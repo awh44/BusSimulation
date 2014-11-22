@@ -6,14 +6,27 @@ public class BusStop
 	private Semaphore can_depart_ = new Semaphore(0);
 	private Semaphore mutex_ = new Semaphore(1, true);
 	private int waiting_ = 0;
+	private boolean buses_remain_ = true;
 
-	public void wait_for_bus()
+	public boolean wait_for_bus()
 	{
 		try
 		{
-			change_waiting(1);
+			mutex_.acquire();
+			if (!buses_remain_)
+			{
+				mutex_.release();
+				return false;
+			}
+			waiting_++;
+			mutex_.release();
 
 			board_.acquire();
+			if (!buses_remain_)
+			{
+				return false;
+			}
+
 			change_waiting(-1);
 		}
 		catch (InterruptedException e)
@@ -21,6 +34,8 @@ public class BusStop
 			System.out.println("Caught an InterruptedException. Exiting.");
 			System.exit(1);
 		}
+
+		return true;
 	}
 
 	public void boarded()
@@ -45,6 +60,24 @@ public class BusStop
 
 			board_.release(release);
 			can_depart_.acquire(release);	
+		}
+		catch (InterruptedException e)
+		{
+			System.out.println("Caught an InterruptedException. Exiting.");
+			System.exit(1);
+		}
+	}
+
+	public void no_remaining_buses() 
+	{
+		try
+		{
+			mutex_.acquire();
+			buses_remain_ = false;
+			mutex_.release();
+
+			System.out.println(waiting_ + " waiting students missed the last bus.");
+			board_.release(waiting_);
 		}
 		catch (InterruptedException e)
 		{

@@ -1,7 +1,7 @@
 .PHONY: run compile clean
 
 run: compile
-	java Main
+	java Main $(STUDENTS) $(SEATS) $(LOOPS) $(TIME)
 
 compile: Main.java Student.java Bus.java BusStop.java
 	javac Main.java Student.java Bus.java BusStop.java

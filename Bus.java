@@ -44,7 +44,8 @@ public class Bus implements Runnable
 		{
 			arrive();
 			depart();
-		}	
+		}
+		stop_.no_remaining_buses();	
 	}
 
 	private void arrive()
